@@ -1,0 +1,78 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Vercel 自动部署（如果已连接 GitHub）
+      # 或使用 Vercel CLI
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: apps/web
+
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push backend image
+        working-directory: apps/backend
+        run: |
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/fateagent-backend:${{ github.sha }} .
+          docker push ${{ steps.login-ecr.outputs.registry }}/fateagent-backend:${{ github.sha }}
+
+      - name: Deploy to App Runner
+        run: |
+          aws apprunner update-service \
+            --service-arn ${{ secrets.BACKEND_SERVICE_ARN }} \
+            --source-configuration '{"ImageRepository":{"ImageIdentifier":"${{ steps.login-ecr.outputs.registry }}/fateagent-backend:${{ github.sha }}","ImageRepositoryType":"ECR"}}'
+
+  deploy-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push agent image
+        working-directory: apps/agent
+        run: |
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/fateagent-agent:${{ github.sha }} .
+          docker push ${{ steps.login-ecr.outputs.registry }}/fateagent-agent:${{ github.sha }}
+
+      - name: Deploy to App Runner
+        run: |
+          aws apprunner update-service \
+            --service-arn ${{ secrets.AGENT_SERVICE_ARN }} \
+            --source-configuration '{"ImageRepository":{"ImageIdentifier":"${{ steps.login-ecr.outputs.registry }}/fateagent-agent:${{ github.sha }}","ImageRepositoryType":"ECR"}}'

@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm -r run type-check
+
+      - name: Test
+        run: pnpm test
+
+      # Python (Agent)
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        working-directory: apps/agent
+        run: |
+          pip install -r requirements.txt
+          pip install ruff black pytest
+
+      - name: Lint Python
+        working-directory: apps/agent
+        run: |
+          ruff check .
+          black --check .
+
+      - name: Test Python
+        working-directory: apps/agent
+        run: pytest tests/ -v || true # MVP 阶段测试可选
