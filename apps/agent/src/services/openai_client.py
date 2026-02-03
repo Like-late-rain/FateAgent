@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 
 from src.config import get_settings
 
@@ -27,7 +27,7 @@ def call_openai(messages: list[Dict[str, str]]) -> Dict[str, Any]:
             if not content:
                 raise ValueError("OpenAI 返回内容为空")
             return {"content": content}
-        except Exception as exc:  # noqa: BLE001
+        except (OpenAIError, RuntimeError, ValueError, TimeoutError) as exc:
             last_error = exc
 
     raise RuntimeError(f"OpenAI 调用失败: {last_error}")

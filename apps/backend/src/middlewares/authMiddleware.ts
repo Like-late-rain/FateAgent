@@ -14,8 +14,15 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
   }
 
   try {
-    const decoded = jwt.verify(token, ENV.jwtSecret) as { sub?: string };
-    request.userId = decoded.sub;
+    const decoded = jwt.verify(token, ENV.jwtSecret);
+    if (typeof decoded !== 'object' || decoded === null || !('sub' in decoded)) {
+      throw new Error(ERROR_MESSAGES.unauthorized);
+    }
+    const subject = (decoded as { sub?: unknown }).sub;
+    if (typeof subject !== 'string') {
+      throw new Error(ERROR_MESSAGES.unauthorized);
+    }
+    request.userId = subject;
   } catch (error) {
     reply.status(401).send({
       success: false,
