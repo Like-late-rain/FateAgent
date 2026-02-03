@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI, Header, HTTPException
 
 from src.config import get_settings
@@ -7,6 +9,7 @@ from src.prompts.analysis_prompt import DISCLAIMER
 from src.services.analysis_service import analyze_match
 
 app = FastAPI(title="FateAgent Agent")
+logger = logging.getLogger("fateagent.agent")
 
 
 @app.get("/health")
@@ -23,12 +26,17 @@ def analyze_endpoint(
     if required_key and x_api_key != required_key:
         raise HTTPException(status_code=401, detail=UNAUTHORIZED_MESSAGE)
 
+    logger.info(
+        "analysis_request_received",
+        extra={"homeTeam": payload.home_team, "awayTeam": payload.away_team},
+    )
     try:
         result = analyze_match(payload)
         return ApiResponse(
             success=True, data=result["result"], disclaimer=result["disclaimer"]
         )
     except (RuntimeError, ValueError) as exc:
+        logger.error("analysis_request_failed", extra={"error": str(exc)})
         return ApiResponse(
             success=False,
             disclaimer=DISCLAIMER,

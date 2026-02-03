@@ -24,6 +24,8 @@ def parse_result(content: str) -> AnalysisPayload:
             data["analysis"] = FALLBACK_ANALYSIS
         if "prediction" not in data:
             data["prediction"] = "平局"
+        if "factors" not in data or not isinstance(data["factors"], list):
+            data["factors"] = []
         return AnalysisPayload.model_validate(data)
     except (ValueError, TypeError, ValidationError) as exc:
         raise ValueError("解析模型输出失败") from exc
