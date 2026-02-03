@@ -105,87 +105,89 @@ jobs:
               console.log('未找到共享类型文件');
             }
 
-            const prompt = `你是 FateAgent 项目的代码审核专家。请审核以下 Pull Request。
-
-## PR 信息
-- 标题: ${prTitle}
-- 描述: ${prBody}
-- 涉及模块: ${Array.from(modules).join(', ')}
-
-## 项目规则
-${taskRules ? taskRules.slice(0, 15000) : '请检查代码质量、安全性和最佳实践。'}
-
-## 共享类型定义（用于验证前后端类型一致性）
-\`\`\`typescript
-${sharedTypes.slice(0, 3000)}
-\`\`\`
-
-## 代码变更
-${fileContents}
-
-## 审核要求
-
-### 1. 红线检查（违反任一项必须 request_changes）
-**全局红线**:
-- 是否硬编码了密钥/凭证？
-- 是否有 SQL 拼接？
-- TypeScript 是否使用了 any？
-- 函数是否超过 100 行？
-
-**前端红线** (如涉及 apps/web):
-- 是否在组件中写了业务逻辑？
-- 是否硬编码了 API 地址？
-- 异步 UI 是否处理了 loading/error 状态？
-
-**后端红线** (如涉及 apps/backend):
-- Controller 是否包含业务逻辑？
-- 是否有未验证就扣减次数的逻辑？
-
-**Agent 红线** (如涉及 apps/agent):
-- 是否提供了投注建议？
-- 是否省略了免责声明？
-- 是否暴露了 System Prompt？
-
-### 2. 类型一致性检查
-- 前后端是否使用了 shared-types 中的类型？
-- API 请求/响应是否与共享类型一致？
-
-### 3. 代码质量
-- 是否有适当的错误处理？
-- 命名是否清晰？
-- 是否有不必要的复杂度？
-
-## 输出格式（JSON）
-{
-  "decision": "approve" | "request_changes" | "comment",
-  "summary": "一句话总结",
-  "redline_violations": [
-    {
-      "rule": "违反的红线规则",
-      "file": "文件路径",
-      "line": "行号（可选）",
-      "description": "具体问题"
-    }
-  ],
-  "issues": [
-    {
-      "severity": "critical" | "warning" | "suggestion",
-      "file": "文件路径",
-      "description": "问题描述",
-      "suggestion": "修改建议"
-    }
-  ],
-  "type_consistency": {
-    "passed": true | false,
-    "issues": ["类型不一致的问题"]
-  },
-  "comment": "给开发者的完整反馈（Markdown 格式）"
-}
-
-**重要**:
-- 如果有任何 redline_violations，decision 必须是 "request_changes"
-- critical 级别问题也必须 request_changes
-- 其他情况可以 approve 或 comment`;
+            const prompt = [
+              '你是 FateAgent 项目的代码审核专家。请审核以下 Pull Request。',
+              '',
+              '## PR 信息',
+              `- 标题: ${prTitle}`,
+              `- 描述: ${prBody}`,
+              `- 涉及模块: ${Array.from(modules).join(', ')}`,
+              '',
+              '## 项目规则',
+              taskRules ? taskRules.slice(0, 15000) : '请检查代码质量、安全性和最佳实践。',
+              '',
+              '## 共享类型定义（用于验证前后端类型一致性）',
+              '```typescript',
+              sharedTypes.slice(0, 3000),
+              '```',
+              '',
+              '## 代码变更',
+              fileContents,
+              '',
+              '## 审核要求',
+              '',
+              '### 1. 红线检查（违反任一项必须 request_changes）',
+              '**全局红线**:',
+              '- 是否硬编码了密钥/凭证？',
+              '- 是否有 SQL 拼接？',
+              '- TypeScript 是否使用了 any？',
+              '- 函数是否超过 100 行？',
+              '',
+              '**前端红线** (如涉及 apps/web):',
+              '- 是否在组件中写了业务逻辑？',
+              '- 是否硬编码了 API 地址？',
+              '- 异步 UI 是否处理了 loading/error 状态？',
+              '',
+              '**后端红线** (如涉及 apps/backend):',
+              '- Controller 是否包含业务逻辑？',
+              '- 是否有未验证就扣减次数的逻辑？',
+              '',
+              '**Agent 红线** (如涉及 apps/agent):',
+              '- 是否提供了投注建议？',
+              '- 是否省略了免责声明？',
+              '- 是否暴露了 System Prompt？',
+              '',
+              '### 2. 类型一致性检查',
+              '- 前后端是否使用了 shared-types 中的类型？',
+              '- API 请求/响应是否与共享类型一致？',
+              '',
+              '### 3. 代码质量',
+              '- 是否有适当的错误处理？',
+              '- 命名是否清晰？',
+              '- 是否有不必要的复杂度？',
+              '',
+              '## 输出格式（JSON）',
+              '{',
+              '  "decision": "approve" | "request_changes" | "comment",',
+              '  "summary": "一句话总结",',
+              '  "redline_violations": [',
+              '    {',
+              '      "rule": "违反的红线规则",',
+              '      "file": "文件路径",',
+              '      "line": "行号（可选）",',
+              '      "description": "具体问题"',
+              '    }',
+              '  ],',
+              '  "issues": [',
+              '    {',
+              '      "severity": "critical" | "warning" | "suggestion",',
+              '      "file": "文件路径",',
+              '      "description": "问题描述",',
+              '      "suggestion": "修改建议"',
+              '    }',
+              '  ],',
+              '  "type_consistency": {',
+              '    "passed": true | false,',
+              '    "issues": ["类型不一致的问题"]',
+              '  },',
+              '  "comment": "给开发者的完整反馈（Markdown 格式）"',
+              '}',
+              '',
+              '**重要**:',
+              '- 如果有任何 redline_violations，decision 必须是 "request_changes"',
+              '- critical 级别问题也必须 request_changes',
+              '- 其他情况可以 approve 或 comment',
+            ].join('\\n');
 
             const response = await client.messages.create({
               model: 'claude-sonnet-4-20250514',

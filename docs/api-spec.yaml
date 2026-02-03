@@ -1,0 +1,37 @@
+openapi: 3.0.3
+info:
+  title: FateAgent API
+  version: 0.1.0
+
+servers:
+  - url: http://localhost:3001/api
+    description: 本地开发
+  - url: https://api.fateagent.com/api
+    description: 生产环境
+
+paths:
+  /auth/register:
+    post:
+      summary: 用户注册
+  /auth/login:
+    post:
+      summary: 用户登录
+  /users/me:
+    get:
+      summary: 获取当前用户
+      security:
+        - bearerAuth: []
+  /users/me/credits:
+    get:
+      summary: 获取次数信息
+  /orders:
+    post:
+      summary: 创建订单
+  /analysis:
+    post:
+      summary: 创建分析
+    get:
+      summary: 获取分析历史
+  /analysis/{id}:
+    get:
+      summary: 获取分析结果
