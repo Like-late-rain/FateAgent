@@ -1,6 +1,7 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { analysisService } from '../services/analysisService';
+import type { AuthenticatedRequest } from '../types/request';
 
 const analysisSchema = z.object({
   homeTeam: z.string().min(1),
@@ -10,7 +11,7 @@ const analysisSchema = z.object({
 });
 
 export const analysisController = {
-  async create(req: Request, res: Response, next: NextFunction) {
+  async create(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.userId;
       if (!userId) {
@@ -27,7 +28,7 @@ export const analysisController = {
       next(error);
     }
   },
-  async getById(req: Request, res: Response, next: NextFunction) {
+  async getById(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.userId;
       if (!userId) {
@@ -43,7 +44,7 @@ export const analysisController = {
       next(error);
     }
   },
-  async list(req: Request, res: Response, next: NextFunction) {
+  async list(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.userId;
       if (!userId) {

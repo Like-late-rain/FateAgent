@@ -1,8 +1,9 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { Response, NextFunction } from 'express';
+import type { AuthenticatedRequest } from '../types/request';
 import { userService } from '../services/userService';
 
 export const userController = {
-  async me(req: Request, res: Response, next: NextFunction) {
+  async me(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.userId;
       if (!userId) {
@@ -18,7 +19,7 @@ export const userController = {
       next(error);
     }
   },
-  async credits(req: Request, res: Response, next: NextFunction) {
+  async credits(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.userId;
       if (!userId) {

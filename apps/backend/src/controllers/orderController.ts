@@ -1,6 +1,7 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { orderService } from '../services/orderService';
+import type { AuthenticatedRequest } from '../types/request';
 
 const createOrderSchema = z.object({
   productType: z.enum(['credits_10', 'credits_30', 'credits_100'])
@@ -11,7 +12,7 @@ const callbackSchema = z.object({
 });
 
 export const orderController = {
-  async create(req: Request, res: Response, next: NextFunction) {
+  async create(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.userId;
       if (!userId) {
@@ -28,7 +29,7 @@ export const orderController = {
       next(error);
     }
   },
-  async callback(req: Request, res: Response, next: NextFunction) {
+  async callback(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const payload = callbackSchema.parse(req.body);
       const order = await orderService.handlePaymentCallback(payload.orderNo);

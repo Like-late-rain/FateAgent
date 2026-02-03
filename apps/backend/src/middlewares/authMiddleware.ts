@@ -1,8 +1,13 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { Response, NextFunction } from 'express';
 import { authService } from '../services/authService';
 import { COOKIE_NAME } from '../utils/constants';
+import type { AuthenticatedRequest } from '../types/request';
 
-export function authMiddleware(req: Request, res: Response, next: NextFunction) {
+export function authMiddleware(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) {
   const token = req.cookies?.[COOKIE_NAME];
   if (!token) {
     res.status(401).json({
