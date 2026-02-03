@@ -15,7 +15,9 @@ def health_check() -> dict:
 
 
 @app.post("/api/v1/analyze", response_model=ApiResponse)
-def analyze_endpoint(payload: AnalysisRequest, x_api_key: str | None = Header(default=None)) -> ApiResponse:
+def analyze_endpoint(
+    payload: AnalysisRequest, x_api_key: str | None = Header(default=None)
+) -> ApiResponse:
     settings = get_settings()
     required_key = settings["agent_api_key"]
     if required_key and x_api_key != required_key:
@@ -23,7 +25,9 @@ def analyze_endpoint(payload: AnalysisRequest, x_api_key: str | None = Header(de
 
     try:
         result = analyze_match(payload)
-        return ApiResponse(success=True, data=result["result"], disclaimer=result["disclaimer"])
+        return ApiResponse(
+            success=True, data=result["result"], disclaimer=result["disclaimer"]
+        )
     except Exception as exc:  # noqa: BLE001
         return ApiResponse(
             success=False,
