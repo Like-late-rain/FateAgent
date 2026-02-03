@@ -28,7 +28,7 @@ def analyze_endpoint(
         return ApiResponse(
             success=True, data=result["result"], disclaimer=result["disclaimer"]
         )
-    except Exception as exc:  # noqa: BLE001
+    except (RuntimeError, ValueError) as exc:
         return ApiResponse(
             success=False,
             disclaimer=DISCLAIMER,

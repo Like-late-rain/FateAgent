@@ -28,8 +28,12 @@ export const ANALYSIS_STATUS = {
 export const AGENT_TIMEOUT_MS = 60_000;
 export const AGENT_RETRY_COUNT = 3;
 export const USER_NICKNAME_PREFIX = '用户';
-export const DEFAULT_DISCLAIMER =
-  '本分析内容基于公开数据和统计模型生成，仅供娱乐与学习参考。\\n- 不构成任何投注、投资或实际决策建议\\n- 不保证预测结果的准确性\\n- 用户应自行承担使用本服务的一切风险\\n\\n本服务不鼓励任何形式的赌博行为。';
+export const DEFAULT_DISCLAIMER = `本分析内容基于公开数据和统计模型生成，仅供娱乐与学习参考。
+- 不构成任何投注、投资或实际决策建议
+- 不保证预测结果的准确性
+- 用户应自行承担使用本服务的一切风险
+
+本服务不鼓励任何形式的赌博行为。`;
 export const ERROR_MESSAGES = {
   duplicatePhone: '手机号已存在',
   invalidCredentials: '账号或密码错误',

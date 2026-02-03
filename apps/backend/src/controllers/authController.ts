@@ -59,13 +59,13 @@ export async function authRoutes(server: FastifyInstance) {
         const userId = request.userId;
         if (!userId) {
           reply.status(401).send(failure(ERROR_CODES.UNAUTHORIZED, ERROR_MESSAGES.unauthorizedShort));
-        return;
+          return;
+        }
+        const user = await getUserProfile(userId);
+        reply.send(success(user));
+      } catch (error) {
+        handleError(error, reply);
       }
-      const user = getUserProfile(userId);
-      reply.send(success(user));
-    } catch (error) {
-      handleError(error, reply);
-    }
     },
   );
 
@@ -77,13 +77,13 @@ export async function authRoutes(server: FastifyInstance) {
         const userId = request.userId;
         if (!userId) {
           reply.status(401).send(failure(ERROR_CODES.UNAUTHORIZED, ERROR_MESSAGES.unauthorizedShort));
-        return;
+          return;
+        }
+        const credits = await getUserCredits(userId);
+        reply.send(success(credits));
+      } catch (error) {
+        handleError(error, reply);
       }
-      const credits = getUserCredits(userId);
-      reply.send(success(credits));
-    } catch (error) {
-      handleError(error, reply);
-    }
     },
   );
 }

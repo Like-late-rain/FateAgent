@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { COOKIE_NAME, ERROR_CODES, ERROR_MESSAGES } from '../constants';
 import { ENV } from '../config/env';
 
-export function authenticate(request: FastifyRequest, reply: FastifyReply) {
+export async function authenticate(request: FastifyRequest, reply: FastifyReply) {
   const token = request.cookies[COOKIE_NAME];
   if (!token || !ENV.jwtSecret) {
     reply.status(401).send({
@@ -21,5 +21,6 @@ export function authenticate(request: FastifyRequest, reply: FastifyReply) {
       success: false,
       error: { code: ERROR_CODES.UNAUTHORIZED, message: ERROR_MESSAGES.unauthorized },
     });
+    return;
   }
 }

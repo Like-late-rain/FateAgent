@@ -55,7 +55,7 @@ export async function analysisRoutes(server: FastifyInstance) {
           return;
         }
         const params = request.params as { id: string };
-        const result = getAnalysis(userId, params.id);
+        const result = await getAnalysis(userId, params.id);
         reply.send(success(result));
       } catch (error) {
         handleError(error, reply);
@@ -76,7 +76,7 @@ export async function analysisRoutes(server: FastifyInstance) {
         const query = request.query as { page?: string; pageSize?: string };
         const page = query.page ? Number(query.page) : DEFAULT_PAGE;
         const pageSize = query.pageSize ? Number(query.pageSize) : undefined;
-        const result = listAnalysisHistory(userId, page, pageSize);
+        const result = await listAnalysisHistory(userId, page, pageSize);
         reply.send(success(result));
       } catch (error) {
         handleError(error, reply);
