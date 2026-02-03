@@ -1,51 +1,27 @@
-import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
-import { cva, type VariantProps } from "class-variance-authority";
+import type { ButtonHTMLAttributes } from 'react';
+import { cn } from '@/utils/cn';
 
-import { cn } from "@/lib/utils";
+type Variant = 'primary' | 'ghost' | 'outline';
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-glow",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-border bg-transparent text-foreground hover:bg-secondary hover:border-primary/50",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-secondary hover:text-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        gradient: "bg-gradient-primary text-primary-foreground hover:scale-105 hover:shadow-glow",
-        accent: "bg-accent text-accent-foreground hover:bg-accent/90 font-bold",
-        hero: "bg-gradient-primary text-primary-foreground hover:scale-105 hover:shadow-glow-lg text-base",
-      },
-      size: {
-        default: "h-10 px-5 py-2",
-        sm: "h-9 rounded-md px-4",
-        lg: "h-12 rounded-lg px-8 text-base",
-        xl: "h-14 rounded-xl px-10 text-lg",
-        icon: "h-10 w-10",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  },
-);
-
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: Variant;
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button";
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
-  },
-);
-Button.displayName = "Button";
+export function Button({ variant = 'primary', className, ...props }: ButtonProps) {
+  const styles = {
+    primary: 'bg-ink text-white hover:bg-ink/90 shadow-glow',
+    ghost: 'bg-transparent text-ink hover:bg-ink/10',
+    outline: 'border border-ink/20 text-ink hover:border-ink'
+  } as const;
 
-export { Button, buttonVariants };
+  return (
+    <button
+      className={cn(
+        'inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition',
+        styles[variant],
+        className
+      )}
+      {...props}
+    />
+  );
+}
