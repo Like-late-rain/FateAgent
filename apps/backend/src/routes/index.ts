@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authController } from '../controllers/authController';
 import { userController } from '../controllers/userController';
 import { orderController } from '../controllers/orderController';
+import { analysisController } from '../controllers/analysisController';
 import { authMiddleware } from '../middlewares/authMiddleware';
 
 export const apiRouter = Router();
@@ -15,3 +16,7 @@ apiRouter.get('/users/me/credits', authMiddleware, userController.credits);
 
 apiRouter.post('/orders', authMiddleware, orderController.create);
 apiRouter.post('/orders/callback', orderController.callback);
+
+apiRouter.post('/analysis', authMiddleware, analysisController.create);
+apiRouter.get('/analysis/:id', authMiddleware, analysisController.getById);
+apiRouter.get('/analysis', authMiddleware, analysisController.list);
