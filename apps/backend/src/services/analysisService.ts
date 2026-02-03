@@ -8,27 +8,7 @@ import { creditTransactionRepository } from '../repositories/creditTransactionRe
 import { userService } from './userService';
 import { ApiError } from '../utils/errors';
 import type { AnalysisRecord } from '../models/types';
-import { DISCLAIMER_TEXT } from '../utils/constants';
-
-function mockPrediction(request: AnalysisRequest): AnalysisResult['result'] {
-  return {
-    prediction: '平局',
-    confidence: 0.52,
-    analysis: `${request.homeTeam} 与 ${request.awayTeam} 在近期状态接近，预计比赛将以胶着方式进行。`,
-    factors: [
-      {
-        name: '近期状态',
-        impact: 'neutral',
-        description: '双方近 5 场胜率接近，优势不明显。'
-      },
-      {
-        name: '主客场因素',
-        impact: 'positive',
-        description: '主队主场得分率略高。'
-      }
-    ]
-  };
-}
+import { agentService } from './agentService';
 
 function toAnalysisResult(record: AnalysisRecord): AnalysisResult {
   return {
@@ -53,7 +33,7 @@ export const analysisService = {
       userId,
       status: 'processing',
       matchInfo: data,
-      disclaimer: DISCLAIMER_TEXT,
+      disclaimer: agentService.getDisclaimer(),
       creditDeducted: false
     });
 
@@ -63,7 +43,7 @@ export const analysisService = {
   },
   async processAnalysis(analysisId: string, payload: AnalysisRequest, userId: string) {
     try {
-      const response = { prediction: mockPrediction(payload) };
+      const response = await agentService.analyze(payload);
       const updated = await analysisRepository.update(analysisId, {
         status: 'completed',
         result: response.prediction,
