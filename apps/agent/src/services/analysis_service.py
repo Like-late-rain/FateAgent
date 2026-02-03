@@ -4,10 +4,10 @@ from typing import Any, Dict
 from pydantic import ValidationError
 
 from src.models.analysis_models import AnalysisPayload, AnalysisRequest
+from src.constants import DEFAULT_CONFIDENCE
 from src.prompts.analysis_prompt import build_messages, DISCLAIMER
 from src.services.openai_client import call_openai
 
-DEFAULT_CONFIDENCE = 0.55
 FALLBACK_ANALYSIS = "暂无足够信息生成深入分析。"
 
 
@@ -18,6 +18,8 @@ def parse_result(content: str) -> AnalysisPayload:
             raise ValueError("模型输出格式无效")
         if "confidence" in data:
             data["confidence"] = float(data["confidence"])
+        else:
+            data["confidence"] = DEFAULT_CONFIDENCE
         if "analysis" not in data:
             data["analysis"] = FALLBACK_ANALYSIS
         if "prediction" not in data:

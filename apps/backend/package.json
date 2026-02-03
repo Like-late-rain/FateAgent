@@ -13,6 +13,7 @@
     "@fateagent/shared-types": "workspace:*",
     "@fastify/cookie": "^9.4.0",
     "@fastify/cors": "^9.0.0",
+    "@supabase/supabase-js": "^2.55.0",
     "bcryptjs": "^2.4.3",
     "fastify": "^4.28.1",
     "jsonwebtoken": "^9.0.2",

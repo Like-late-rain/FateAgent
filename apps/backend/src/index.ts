@@ -16,7 +16,7 @@ server.register(cors, {
 });
 
 server.register(cookie, {
-  secret: ENV.jwtSecret || undefined,
+  secret: ENV.jwtSecret,
 });
 
 server.get('/health', async () => HEALTH_STATUS);
@@ -26,9 +26,6 @@ server.register(analysisRoutes);
 
 const start = async () => {
   try {
-    if (!ENV.jwtSecret) {
-      server.log.warn('JWT_SECRET is not configured.');
-    }
     await server.listen({ port: ENV.port, host: HOST });
   } catch (error) {
     server.log.error(error);
