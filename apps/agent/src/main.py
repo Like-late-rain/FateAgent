@@ -3,6 +3,8 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .api.routes import router as api_router
+
 app = FastAPI(title="FateAgent Agent", version="0.1.0")
 
 app.add_middleware(
@@ -18,3 +20,5 @@ app.add_middleware(
 async def health() -> dict:
     return {"status": "ok"}
 
+
+app.include_router(api_router)
