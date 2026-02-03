@@ -1,0 +1,350 @@
+openapi: 3.0.3
+info:
+  title: FateAgent API
+  version: 0.1.0
+servers:
+  - url: http://localhost:3001/api
+    description: 本地开发
+  - url: https://api.fateagent.com/api
+    description: 生产环境
+paths:
+  /auth/register:
+    post:
+      summary: 用户注册
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: 注册成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponseWrapper'
+  /auth/login:
+    post:
+      summary: 用户登录
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponseWrapper'
+  /users/me:
+    get:
+      summary: 获取当前用户
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 用户信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfoWrapper'
+  /users/me/credits:
+    get:
+      summary: 获取次数信息
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 次数信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditsWrapper'
+  /orders:
+    post:
+      summary: 创建订单
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '200':
+          description: 订单信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderInfoWrapper'
+  /analysis:
+    post:
+      summary: 创建分析
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalysisRequest'
+      responses:
+        '200':
+          description: 分析记录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResultWrapper'
+    get:
+      summary: 获取分析历史
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 分析历史列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisHistoryWrapper'
+  /analysis/{id}:
+    get:
+      summary: 获取分析结果
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 分析结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResultWrapper'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [phone, password, smsCode]
+      properties:
+        phone:
+          type: string
+        password:
+          type: string
+        smsCode:
+          type: string
+    LoginRequest:
+      type: object
+      required: [phone, password]
+      properties:
+        phone:
+          type: string
+        password:
+          type: string
+    UserInfo:
+      type: object
+      required: [id, phone, remainingCredits, createdAt]
+      properties:
+        id:
+          type: string
+        phone:
+          type: string
+        nickname:
+          type: string
+          nullable: true
+        remainingCredits:
+          type: integer
+        createdAt:
+          type: string
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserInfo'
+    CreateOrderRequest:
+      type: object
+      required: [productType]
+      properties:
+        productType:
+          type: string
+          enum: [credits_10, credits_30, credits_100]
+    OrderInfo:
+      type: object
+      required: [id, orderNo, productType, creditsAmount, priceCents, status, createdAt]
+      properties:
+        id:
+          type: string
+        orderNo:
+          type: string
+        productType:
+          type: string
+          enum: [credits_10, credits_30, credits_100]
+        creditsAmount:
+          type: integer
+        priceCents:
+          type: integer
+        status:
+          type: string
+          enum: [pending, paid, failed, refunded]
+        createdAt:
+          type: string
+    AnalysisRequest:
+      type: object
+      required: [homeTeam, awayTeam, competition, matchDate]
+      properties:
+        homeTeam:
+          type: string
+        awayTeam:
+          type: string
+        competition:
+          type: string
+        matchDate:
+          type: string
+    AnalysisFactor:
+      type: object
+      required: [name, impact, description]
+      properties:
+        name:
+          type: string
+        impact:
+          type: string
+          enum: [positive, negative, neutral]
+        description:
+          type: string
+    AnalysisResult:
+      type: object
+      required: [id, status, matchInfo, disclaimer, createdAt]
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+        matchInfo:
+          type: object
+          required: [homeTeam, awayTeam, competition, matchDate]
+          properties:
+            homeTeam:
+              type: string
+            awayTeam:
+              type: string
+            competition:
+              type: string
+            matchDate:
+              type: string
+        result:
+          type: object
+          nullable: true
+          properties:
+            prediction:
+              type: string
+              enum: ['主胜', '平局', '客胜']
+            confidence:
+              type: number
+            analysis:
+              type: string
+            factors:
+              type: array
+              items:
+                $ref: '#/components/schemas/AnalysisFactor'
+        disclaimer:
+          type: string
+        createdAt:
+          type: string
+        completedAt:
+          type: string
+          nullable: true
+    ApiError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ApiResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+        data:
+          nullable: true
+        error:
+          $ref: '#/components/schemas/ApiError'
+    AuthResponseWrapper:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/AuthResponse'
+    UserInfoWrapper:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/UserInfo'
+    CreditsWrapper:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [remainingCredits]
+              properties:
+                remainingCredits:
+                  type: integer
+    OrderInfoWrapper:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/OrderInfo'
+    AnalysisResultWrapper:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/AnalysisResult'
+    AnalysisHistoryWrapper:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [items, total, page, pageSize, hasMore]
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/AnalysisResult'
+                total:
+                  type: integer
+                page:
+                  type: integer
+                pageSize:
+                  type: integer
+                hasMore:
+                  type: boolean
