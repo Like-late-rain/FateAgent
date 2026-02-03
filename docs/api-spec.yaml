@@ -40,6 +40,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthResponseWrapper'
+  /auth/logout:
+    post:
+      summary: 用户登出
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 登出成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
   /users/me:
     get:
       summary: 获取当前用户
@@ -78,6 +90,26 @@ paths:
       responses:
         '200':
           description: 订单信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderInfoWrapper'
+  /orders/callback:
+    post:
+      summary: 支付回调
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderNo]
+              properties:
+                orderNo:
+                  type: string
+      responses:
+        '200':
+          description: 支付处理结果
           content:
             application/json:
               schema:
@@ -129,6 +161,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AnalysisResultWrapper'
+  /health:
+    get:
+      summary: 健康检查
+      responses:
+        '200':
+          description: 服务正常
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
 components:
   securitySchemes:
     bearerAuth:
@@ -348,3 +394,10 @@ components:
                   type: integer
                 hasMore:
                   type: boolean
+    EmptyResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              nullable: true
