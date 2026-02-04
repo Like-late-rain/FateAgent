@@ -37,15 +37,6 @@ export default function RegisterPage() {
                 </p>
               )}
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">验证码</label>
-              <Input placeholder="短信验证码" {...form.register('smsCode')} />
-              {form.formState.errors.smsCode && (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.smsCode.message}
-                </p>
-              )}
-            </div>
             {error && <ErrorMessage message={error.message} />}
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? '注册中...' : '注册'}

@@ -11,7 +11,7 @@ export function useRegisterForm() {
   const { registerMutation } = useAuth();
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { phone: '', password: '', smsCode: '' }
+    defaultValues: { phone: '', password: '' }
   });
 
   const onSubmit = form.handleSubmit(async (values) => {

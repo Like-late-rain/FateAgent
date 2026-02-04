@@ -5,8 +5,7 @@ import { COOKIE_NAME } from '../utils/constants';
 
 const registerSchema = z.object({
   phone: z.string().min(6),
-  password: z.string().min(6),
-  smsCode: z.string().min(4)
+  password: z.string().min(6)
 });
 
 const loginSchema = z.object({

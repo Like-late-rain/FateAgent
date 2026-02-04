@@ -184,7 +184,7 @@ components:
   schemas:
     RegisterRequest:
       type: object
-      required: [phone, password, smsCode]
+      required: [phone, password]
       properties:
         phone:
           type: string
@@ -192,6 +192,7 @@ components:
           type: string
         smsCode:
           type: string
+          nullable: true
     LoginRequest:
       type: object
       required: [phone, password]

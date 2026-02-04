@@ -2,7 +2,7 @@
 export interface RegisterRequest {
   phone: string;
   password: string;
-  smsCode: string;
+  smsCode?: string;
 }
 
 export interface LoginRequest {
