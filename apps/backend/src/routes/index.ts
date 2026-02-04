@@ -4,6 +4,7 @@ import { userController } from '../controllers/userController';
 import { orderController } from '../controllers/orderController';
 import { analysisController } from '../controllers/analysisController';
 import { authMiddleware } from '../middlewares/authMiddleware';
+import { paymentCallbackAuth } from '../middlewares/paymentCallbackAuth';
 
 export const apiRouter = Router();
 
@@ -15,7 +16,7 @@ apiRouter.get('/users/me', authMiddleware, userController.me);
 apiRouter.get('/users/me/credits', authMiddleware, userController.credits);
 
 apiRouter.post('/orders', authMiddleware, orderController.create);
-apiRouter.post('/orders/callback', orderController.callback);
+apiRouter.post('/orders/callback', paymentCallbackAuth, orderController.callback);
 
 apiRouter.post('/analysis', authMiddleware, analysisController.create);
 apiRouter.get('/analysis/:id', authMiddleware, analysisController.getById);

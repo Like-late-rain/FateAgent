@@ -97,6 +97,13 @@ paths:
   /orders/callback:
     post:
       summary: 支付回调
+      parameters:
+        - in: header
+          name: X-Callback-Token
+          required: true
+          schema:
+            type: string
+          description: 回调鉴权密钥
       requestBody:
         required: true
         content:
