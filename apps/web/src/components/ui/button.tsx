@@ -1,27 +1,45 @@
-import type { ButtonHTMLAttributes } from 'react';
+import * as React from 'react';
 import { cn } from '@/utils/cn';
 
-type Variant = 'primary' | 'ghost' | 'outline';
-
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: Variant;
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'default' | 'secondary' | 'outline' | 'ghost';
+  size?: 'default' | 'sm' | 'lg';
 }
 
-export function Button({ variant = 'primary', className, ...props }: ButtonProps) {
-  const styles = {
-    primary: 'bg-ink text-white hover:bg-ink/90 shadow-glow',
-    ghost: 'bg-transparent text-ink hover:bg-ink/10',
-    outline: 'border border-ink/20 text-ink hover:border-ink'
-  } as const;
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    { className, variant = 'default', size = 'default', ...props },
+    ref
+  ) => {
+    const variants = {
+      default:
+        'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm',
+      secondary:
+        'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+      outline:
+        'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+      ghost: 'hover:bg-accent hover:text-accent-foreground'
+    } as const;
 
-  return (
-    <button
-      className={cn(
-        'inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition',
-        styles[variant],
-        className
-      )}
-      {...props}
-    />
-  );
-}
+    const sizes = {
+      default: 'h-10 px-4 py-2',
+      sm: 'h-9 rounded-md px-3',
+      lg: 'h-11 rounded-md px-8'
+    } as const;
+
+    return (
+      <button
+        ref={ref}
+        className={cn(
+          'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ring-offset-background',
+          variants[variant],
+          sizes[size],
+          className
+        )}
+        {...props}
+      />
+    );
+  }
+);
+Button.displayName = 'Button';

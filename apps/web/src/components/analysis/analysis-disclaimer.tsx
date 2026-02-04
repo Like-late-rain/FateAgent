@@ -1,10 +1,14 @@
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { DISCLAIMER_TEXT } from '@/utils/constants';
 
 export function AnalysisDisclaimer() {
   return (
     <Card>
-      <p className="whitespace-pre-line text-xs text-ink/60">{DISCLAIMER_TEXT}</p>
+      <CardContent>
+        <p className="whitespace-pre-line text-xs text-muted-foreground">
+          {DISCLAIMER_TEXT}
+        </p>
+      </CardContent>
     </Card>
   );
 }

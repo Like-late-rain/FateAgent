@@ -3,18 +3,36 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+  --radius: 0.75rem;
+}
+
+* {
+  @apply border-border;
 }
 
 body {
-  @apply bg-dusk text-ink antialiased;
-  background-image:
-    radial-gradient(circle at 15% 20%, rgba(14, 165, 233, 0.2), transparent 55%),
-    radial-gradient(circle at 80% 10%, rgba(255, 138, 101, 0.2), transparent 45%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(244, 241, 235, 0.9));
-  min-height: 100vh;
+  @apply bg-background text-foreground;
 }
 
 main {
-  min-height: calc(100vh - 80px);
+  min-height: calc(100vh - 64px);
 }

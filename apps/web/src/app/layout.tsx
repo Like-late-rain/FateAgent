@@ -1,19 +1,12 @@
 import type { Metadata } from 'next';
-import { Fraunces, Space_Grotesk } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import './globals.css';
 import { AppProviders } from '@/components/app-providers';
 import { SiteHeader } from '@/components/site-header';
 
-const displayFont = Fraunces({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-display',
-  weight: ['400', '600', '700']
-});
-
-const bodyFont = Space_Grotesk({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  weight: ['400', '500', '600', '700']
+  variable: '--font-sans'
 });
 
 export const metadata: Metadata = {
@@ -27,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="zh-CN" className={`${displayFont.variable} ${bodyFont.variable}`}>
+    <html lang="zh-CN" className={inter.variable}>
       <body className="font-sans">
         <AppProviders>
           <SiteHeader />

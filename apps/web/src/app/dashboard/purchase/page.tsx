@@ -1,6 +1,6 @@
 'use client';
 
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ErrorMessage } from '@/components/ui/error-message';
 import { Loading } from '@/components/ui/loading';
@@ -13,27 +13,32 @@ export default function PurchasePage() {
   return (
     <div className="space-y-6">
       <Card>
-        <h1 className="font-display text-2xl font-semibold">购买次数</h1>
-        <p className="mt-2 text-sm text-ink/70">选择套餐并完成支付。</p>
+        <CardHeader>
+          <CardTitle>购买次数</CardTitle>
+          <CardDescription>选择套餐并完成支付。</CardDescription>
+        </CardHeader>
       </Card>
       <div className="grid gap-6 md:grid-cols-3">
         {PRODUCT_OPTIONS.map((product) => (
-          <Card key={product.type} className="flex h-full flex-col gap-4">
-            <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-ink/50">
+          <Card key={product.type}>
+            <CardHeader>
+              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
                 {product.label}
               </p>
-              <p className="mt-2 text-3xl font-semibold">{product.credits} 次</p>
-            </div>
-            <p className="text-sm text-ink/70">价格：¥{product.price}</p>
-            <Button
-              disabled={createOrderMutation.isPending}
-              onClick={() =>
-                createOrderMutation.mutate({ productType: product.type })
-              }
-            >
-              {createOrderMutation.isPending ? '处理中...' : '立即购买'}
-            </Button>
+              <CardTitle className="text-2xl">{product.credits} 次</CardTitle>
+              <CardDescription>价格：¥{product.price}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                className="w-full"
+                disabled={createOrderMutation.isPending}
+                onClick={() =>
+                  createOrderMutation.mutate({ productType: product.type })
+                }
+              >
+                {createOrderMutation.isPending ? '处理中...' : '立即购买'}
+              </Button>
+            </CardContent>
           </Card>
         ))}
       </div>
@@ -43,9 +48,11 @@ export default function PurchasePage() {
       )}
       {createOrderMutation.data?.success && (
         <Card>
-          <p className="text-sm text-ink/70">
-            订单已创建（Mock），请前往支付页完成支付。
-          </p>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              订单已创建（Mock），请前往支付页完成支付。
+            </p>
+          </CardContent>
         </Card>
       )}
     </div>

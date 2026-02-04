@@ -3,22 +3,22 @@ import { Button } from '@/components/ui/button';
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-white/40 bg-white/70 backdrop-blur">
+    <header className="border-b border-border bg-background">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="font-display text-xl font-semibold tracking-tight">
+        <Link href="/" className="text-lg font-semibold">
           FateAgent
         </Link>
         <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
-          <Link href="/dashboard" className="hover:text-tide">
+          <Link href="/dashboard" className="text-muted-foreground hover:text-foreground">
             产品控制台
           </Link>
-          <Link href="/dashboard/analysis" className="hover:text-tide">
+          <Link href="/dashboard/analysis" className="text-muted-foreground hover:text-foreground">
             赛事分析
           </Link>
-          <Link href="/dashboard/history" className="hover:text-tide">
+          <Link href="/dashboard/history" className="text-muted-foreground hover:text-foreground">
             历史记录
           </Link>
-          <Link href="/dashboard/purchase" className="hover:text-tide">
+          <Link href="/dashboard/purchase" className="text-muted-foreground hover:text-foreground">
             购买次数
           </Link>
         </nav>

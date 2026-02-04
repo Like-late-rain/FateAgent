@@ -1,6 +1,6 @@
 'use client';
 
-import { Card } from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAnalysisForm } from '@/hooks/use-analysis-form';
 import { useCredits } from '@/hooks/use-credits';
 import { AnalysisForm } from '@/components/analysis/analysis-form';
@@ -21,10 +21,10 @@ export default function AnalysisPage() {
   return (
     <div className="space-y-6">
       <Card>
-        <h1 className="font-display text-2xl font-semibold">赛事分析</h1>
-        <p className="mt-2 text-sm text-ink/70">
-          输入比赛信息，系统将生成结构化分析报告。
-        </p>
+        <CardHeader>
+          <CardTitle>赛事分析</CardTitle>
+          <CardDescription>输入比赛信息，系统将生成结构化分析报告。</CardDescription>
+        </CardHeader>
       </Card>
       <AnalysisForm
         form={form}
