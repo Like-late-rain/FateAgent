@@ -5,7 +5,7 @@ const navLinks = [
   { href: '/', label: '首页' },
   { href: '/dashboard/analysis', label: '赛事分析' },
   { href: '/dashboard/history', label: '历史记录' },
-  { href: '/dashboard/purchase', label: '购买次数' }
+  { href: '/pricing', label: '购买次数' }
 ];
 
 export function SiteHeader() {
