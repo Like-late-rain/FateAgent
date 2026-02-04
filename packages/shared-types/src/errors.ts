@@ -1,0 +1,7 @@
+export const ERROR_CODES = {
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  INSUFFICIENT_CREDITS: 'INSUFFICIENT_CREDITS',
+  ANALYSIS_FAILED: 'ANALYSIS_FAILED'
+} as const;
+
+export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
