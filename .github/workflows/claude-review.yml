@@ -107,11 +107,12 @@ jobs:
             }
 
             // 发布 Review
+            // 注意: GitHub Actions 不允许 approve 自己的 PR，所以 approve 时使用 COMMENT
+            const event = result.decision === 'request_changes' ? 'REQUEST_CHANGES' : 'COMMENT';
             await github.rest.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.payload.pull_request.number,
               body: body,
-              event: result.decision === 'approve' ? 'APPROVE' :
-                     result.decision === 'request_changes' ? 'REQUEST_CHANGES' : 'COMMENT'
+              event: event
             });
