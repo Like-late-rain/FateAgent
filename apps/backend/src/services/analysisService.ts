@@ -44,26 +44,26 @@ export const analysisService = {
   async processAnalysis(analysisId: string, payload: AnalysisRequest, userId: string) {
     try {
       const response = await agentService.analyze(payload);
-      const updated = await analysisRepository.update(analysisId, {
+      await userService.consumeCredits(userId, 1);
+      await creditTransactionRepository.create({
+        userId,
+        amount: -1,
+        type: 'consume',
+        description: '分析消耗一次'
+      });
+      await analysisRepository.update(analysisId, {
         status: 'completed',
         result: response.prediction,
-        completedAt: new Date().toISOString()
+        completedAt: new Date().toISOString(),
+        creditDeducted: true
       });
-      if (updated && !updated.creditDeducted) {
-        await userService.consumeCredits(userId, 1);
-        await creditTransactionRepository.create({
-          userId,
-          amount: -1,
-          type: 'consume',
-          description: '分析消耗一次'
-        });
-        await analysisRepository.update(analysisId, { creditDeducted: true });
-      }
     } catch (error) {
       const message = error instanceof Error ? error.message : '分析失败';
       await analysisRepository.update(analysisId, {
         status: 'failed',
-        errorMessage: message
+        errorMessage: message,
+        result: undefined,
+        completedAt: undefined
       });
     }
   },
