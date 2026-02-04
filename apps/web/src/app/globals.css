@@ -3,26 +3,26 @@
 @tailwind utilities;
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 222.2 47.4% 11.2%;
+  --background: 222 47% 4%;
+  --foreground: 210 40% 98%;
+  --card: 220 30% 8%;
+  --card-foreground: 210 40% 98%;
+  --popover: 220 30% 8%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 159 64% 42%;
   --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
+  --secondary: 220 22% 14%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 220 18% 16%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 220 22% 14%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 72% 51%;
   --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 222.2 84% 4.9%;
-  --radius: 0.75rem;
+  --border: 220 18% 18%;
+  --input: 220 18% 18%;
+  --ring: 159 64% 42%;
+  --radius: 0.9rem;
 }
 
 * {
@@ -31,8 +31,18 @@
 
 body {
   @apply bg-background text-foreground;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(26, 64, 64, 0.35), transparent 55%),
+    radial-gradient(circle at 80% 0%, rgba(15, 90, 70, 0.4), transparent 55%),
+    linear-gradient(180deg, rgba(10, 14, 22, 0.9), rgba(7, 9, 16, 0.95));
 }
 
 main {
   min-height: calc(100vh - 64px);
+}
+
+.grid-overlay {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
