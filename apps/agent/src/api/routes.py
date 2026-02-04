@@ -22,7 +22,8 @@ def _require_api_key(api_key: str | None) -> None:
 
 @router.post("/analyze", response_model=AnalysisResponse)
 async def analyze(
-    payload: AnalysisRequest, x_api_key: str | None = Header(default=None, alias="X-API-KEY")
+    payload: AnalysisRequest,
+    x_api_key: str | None = Header(default=None, alias="X-API-KEY"),
 ) -> AnalysisResponse:
     _require_api_key(x_api_key)
     analysis_payload = AnalysisPayload(
