@@ -26,12 +26,14 @@ function MockPaymentContent() {
 
     try {
       // 调用支付回调接口
+      // 使用环境变量配置 callback token，默认值仅用于开发测试
+      const callbackToken = process.env.NEXT_PUBLIC_MOCK_CALLBACK_TOKEN || 'mock-callback-token';
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
       const res = await fetch(`${apiUrl}/orders/callback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Callback-Token': 'mock-callback-token' // 模拟回调 token
+          'X-Callback-Token': callbackToken
         },
         body: JSON.stringify({ orderNo }),
         credentials: 'include'

@@ -9,8 +9,12 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
  */
 export const mockPaymentProvider: PaymentProvider = {
   async createPayment(order: OrderRecord): Promise<{ payUrl: string }> {
-    // 生成模拟支付页面 URL
-    const payUrl = `${FRONTEND_URL}/pay/mock?orderNo=${order.orderNo}&amount=${order.priceCents}`;
+    // 生成模拟支付页面 URL，对参数进行编码
+    const params = new URLSearchParams({
+      orderNo: order.orderNo,
+      amount: String(order.priceCents)
+    });
+    const payUrl = `${FRONTEND_URL}/pay/mock?${params.toString()}`;
     return { payUrl };
   },
 
