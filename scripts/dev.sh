@@ -75,26 +75,6 @@ if ! require_cmd pnpm; then
   exit 1
 fi
 
-PYTHON_BIN=""
-if command -v python3 >/dev/null 2>&1; then
-  PYTHON_BIN="python3"
-elif command -v python >/dev/null 2>&1; then
-  PYTHON_BIN="python"
-else
-  echo "[dev] Missing dependency: python" >&2
-  exit 1
-fi
-
-UVICORN_CMD=()
-if "$PYTHON_BIN" -m uvicorn --version >/dev/null 2>&1; then
-  UVICORN_CMD=("$PYTHON_BIN" -m uvicorn)
-elif command -v uvicorn >/dev/null 2>&1; then
-  UVICORN_CMD=(uvicorn)
-else
-  echo "[dev] Missing dependency: uvicorn (install in the active Python env)" >&2
-  exit 1
-fi
-
 log "Starting services..."
 if ! start_service "web" "apps/web" env PORT=3000 pnpm dev; then
   stop_services "Failed to start web service."
@@ -104,8 +84,8 @@ if ! start_service "backend" "apps/backend" env PORT=3001 pnpm dev; then
   stop_services "Failed to start backend service."
   exit 1
 fi
-if ! start_service "agent" "apps/agent" "${UVICORN_CMD[@]}" main:app --app-dir src --host 0.0.0.0 --port 8000; then
-  stop_services "Failed to start agent service."
+if ! start_service "agent-ts" "apps/agent-ts" pnpm dev; then
+  stop_services "Failed to start agent-ts service."
   exit 1
 fi
 

@@ -18,6 +18,7 @@ apiRouter.get('/users/me/credits', authMiddleware, userController.credits);
 apiRouter.post('/orders', authMiddleware, orderController.create);
 apiRouter.post('/orders/callback', paymentCallbackAuth, orderController.callback);
 
+apiRouter.post('/analysis/parse', authMiddleware, analysisController.parse);
 apiRouter.post('/analysis', authMiddleware, analysisController.create);
 apiRouter.get('/analysis/:id', authMiddleware, analysisController.getById);
 apiRouter.get('/analysis', authMiddleware, analysisController.list);

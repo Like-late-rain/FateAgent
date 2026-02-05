@@ -1,6 +1,7 @@
 import type { Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { analysisService } from '../services/analysisService';
+import { agentService } from '../services/agentService';
 import type { AuthenticatedRequest } from '../types/request';
 
 const analysisSchema = z.object({
@@ -10,7 +11,28 @@ const analysisSchema = z.object({
   matchDate: z.string().min(8)
 });
 
+const parseQuerySchema = z.object({
+  query: z.string().min(1)
+});
+
 export const analysisController = {
+  async parse(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.userId;
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          error: { code: 'UNAUTHORIZED', message: '未登录' }
+        });
+        return;
+      }
+      const { query } = parseQuerySchema.parse(req.body);
+      const result = await agentService.parseQuery(query);
+      res.json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  },
   async create(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.userId;

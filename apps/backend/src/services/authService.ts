@@ -15,8 +15,8 @@ function getJwtSecret() {
 
 function signToken(userId: string) {
   const secret = getJwtSecret();
-  const expiresIn = process.env.JWT_EXPIRES_IN ?? '7d';
-  return jwt.sign({ sub: userId }, secret, { expiresIn });
+  const expiresIn = process.env.JWT_EXPIRES_IN || '7d';
+  return jwt.sign({ sub: userId }, secret, { expiresIn } as jwt.SignOptions);
 }
 
 export const authService = {

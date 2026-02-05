@@ -1,8 +1,19 @@
-import type { AnalysisRequest, AnalysisResult } from '@fateagent/shared-types';
+import type {
+  AnalysisRequest,
+  AnalysisResult,
+  ParseQueryResponse,
+  ParsedMatchInfo
+} from '@fateagent/shared-types';
 import { DISCLAIMER_TEXT } from '../utils/constants';
 
 type AgentResponse = {
   prediction: AnalysisResult['result'];
+};
+
+type AgentParseResponse = {
+  success: boolean;
+  parsed?: ParsedMatchInfo;
+  error?: string;
 };
 
 function buildMockResult(request: AnalysisRequest): AnalysisResult['result'] {
@@ -28,8 +39,8 @@ function buildMockResult(request: AnalysisRequest): AnalysisResult['result'] {
 export const agentService = {
   async analyze(request: AnalysisRequest): Promise<AgentResponse> {
     const baseUrl = process.env.AGENT_SERVICE_URL;
-    const apiKey = process.env.AGENT_API_KEY;
-    if (!baseUrl || !apiKey) {
+    const apiKey = process.env.AGENT_API_KEY ?? '';
+    if (!baseUrl) {
       return { prediction: buildMockResult(request) };
     }
 
@@ -62,5 +73,37 @@ export const agentService = {
   },
   getDisclaimer() {
     return DISCLAIMER_TEXT;
+  },
+  async parseQuery(query: string): Promise<ParseQueryResponse> {
+    const baseUrl = process.env.AGENT_SERVICE_URL;
+    const apiKey = process.env.AGENT_API_KEY ?? '';
+
+    if (!baseUrl) {
+      return { success: false, error: 'Agent 服务未配置' };
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+
+    try {
+      const res = await fetch(`${baseUrl}/api/v1/parse`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': apiKey
+        },
+        body: JSON.stringify({ query }),
+        signal: controller.signal
+      });
+      const data = (await res.json()) as AgentParseResponse;
+      if (!res.ok) {
+        return { success: false, error: '解析服务请求失败' };
+      }
+      return data;
+    } catch (_error) {
+      return { success: false, error: '解析服务连接失败' };
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 };
