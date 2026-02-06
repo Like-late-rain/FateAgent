@@ -25,7 +25,8 @@ function toAnalysisResult(record: AnalysisRecord): AnalysisResult {
 export const analysisService = {
   async createAnalysis(userId: string, data: AnalysisRequest) {
     const user = await userService.getUserById(userId);
-    if (user.remainingCredits < 1) {
+    // Admin 用户跳过次数检查
+    if (user.role !== 'admin' && user.remainingCredits < 1) {
       throw new ApiError('次数不足', 403, 'INSUFFICIENT_CREDITS');
     }
 
@@ -44,18 +45,26 @@ export const analysisService = {
   async processAnalysis(analysisId: string, payload: AnalysisRequest, userId: string) {
     try {
       const response = await agentService.analyze(payload);
-      await userService.consumeCredits(userId, 1);
-      await creditTransactionRepository.create({
-        userId,
-        amount: -1,
-        type: 'consume',
-        description: '分析消耗一次'
-      });
+
+      // 获取用户信息以检查是否为 admin
+      const user = await userService.getUserById(userId);
+
+      // Admin 用户不扣除次数
+      if (user.role !== 'admin') {
+        await userService.consumeCredits(userId, 1);
+        await creditTransactionRepository.create({
+          userId,
+          amount: -1,
+          type: 'consume',
+          description: '分析消耗一次'
+        });
+      }
+
       await analysisRepository.update(analysisId, {
         status: 'completed',
         result: response.prediction,
         completedAt: new Date().toISOString(),
-        creditDeducted: true
+        creditDeducted: user.role !== 'admin'
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : '分析失败';
