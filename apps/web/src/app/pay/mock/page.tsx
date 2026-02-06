@@ -53,7 +53,8 @@ function MockPaymentContent() {
       } else {
         setPaymentResult('failed');
       }
-    } catch {
+    } catch (error) {
+      console.error('[MockPayment] Payment failed:', error);
       setPaymentResult('failed');
     } finally {
       setIsPaying(false);

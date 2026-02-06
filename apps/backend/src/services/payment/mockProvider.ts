@@ -18,9 +18,13 @@ export const mockPaymentProvider: PaymentProvider = {
     return { payUrl };
   },
 
-  async verifyCallback(_payload: unknown): Promise<boolean> {
-    // 模拟支付始终验证通过
-    return true;
+  async verifyCallback(payload: unknown): Promise<boolean> {
+    // 验证 payload 基本结构
+    if (!payload || typeof payload !== 'object') {
+      return false;
+    }
+    const data = payload as Record<string, unknown>;
+    return typeof data.orderNo === 'string' && data.orderNo.length > 0;
   },
 
   async queryPayment(orderNo: string): Promise<PaymentResult> {

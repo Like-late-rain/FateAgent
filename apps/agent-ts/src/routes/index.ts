@@ -20,8 +20,17 @@ const analyzeSchema = z.object({
 // API Key 验证中间件
 function requireApiKey(req: Request, res: Response, next: NextFunction) {
   const configuredKey = (process.env.AGENT_API_KEY || '').trim();
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  // 生产环境必须配置 API Key
+  if (isProduction && !configuredKey) {
+    console.error('[Auth] API key not configured in production');
+    res.status(500).json({ error: 'Server configuration error' });
+    return;
+  }
+
+  // 开发环境如果没有配置 API Key，则跳过验证
   if (!configuredKey) {
-    // 如果没有配置 API Key，则跳过验证
     return next();
   }
 
