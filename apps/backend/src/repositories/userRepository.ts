@@ -13,6 +13,7 @@ type UserRow = {
   password_hash: string;
   nickname: string | null;
   remaining_credits: number;
+  role: 'user' | 'admin';
   created_at: string;
   updated_at: string;
 };
@@ -24,6 +25,7 @@ function toUserRecord(row: UserRow): UserRecord {
     passwordHash: row.password_hash,
     nickname: row.nickname ?? undefined,
     remainingCredits: row.remaining_credits,
+    role: row.role,
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
@@ -42,6 +44,9 @@ function toUserUpdates(updates: Partial<UserRecord>): Partial<UserRow> {
   }
   if ('remainingCredits' in updates && updates.remainingCredits !== undefined) {
     mapped.remaining_credits = updates.remainingCredits;
+  }
+  if ('role' in updates && updates.role) {
+    mapped.role = updates.role;
   }
   mapped.updated_at = new Date().toISOString();
   return mapped;
@@ -95,7 +100,8 @@ export const userRepository = {
           phone: data.phone,
           password_hash: data.passwordHash,
           nickname: data.nickname ?? null,
-          remaining_credits: data.remainingCredits
+          remaining_credits: data.remainingCredits,
+          role: data.role
         })
         .select('*')
         .single();

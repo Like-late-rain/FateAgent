@@ -30,7 +30,8 @@ export const authService = {
       phone: data.phone,
       passwordHash,
       nickname: `用户${data.phone.slice(-4)}`,
-      remainingCredits: 0
+      remainingCredits: 0,
+      role: 'user'
     });
     const token = signToken(user.id);
     return { token, user: userService.toUserInfo(user) };

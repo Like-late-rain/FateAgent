@@ -6,6 +6,7 @@ export interface UserRecord {
   passwordHash: string;
   nickname?: string;
   remainingCredits: number;
+  role: 'user' | 'admin'; // 用户角色：admin 拥有无限次分析权限
   createdAt: string;
   updatedAt: string;
 }
