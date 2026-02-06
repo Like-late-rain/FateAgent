@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loading } from '@/components/ui/loading';
@@ -9,11 +8,8 @@ import { ErrorMessage } from '@/components/ui/error-message';
 import { useAnalysisHistory } from '@/hooks/use-analysis-history';
 
 export default function HistoryPage() {
-  const searchParams = useSearchParams();
-  const focusId = searchParams.get('focus');
   const { query, page, setPage, hasMore } = useAnalysisHistory();
   const items = query.data?.data?.items ?? [];
-  const focusItem = items.find((item) => item.id === focusId);
 
   return (
     <div className="space-y-6">
@@ -29,20 +25,6 @@ export default function HistoryPage() {
           {query.isError && <ErrorMessage message="加载失败，请稍后重试。" />}
           {!query.isLoading && items.length === 0 && (
             <p className="text-sm text-muted-foreground">暂无历史记录。</p>
-          )}
-          {focusItem && (
-            <div className="rounded-md border border-border bg-background p-4">
-              <p className="text-sm text-muted-foreground">详情</p>
-              <p className="mt-2 font-semibold">
-                {focusItem.matchInfo.homeTeam} vs {focusItem.matchInfo.awayTeam}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {focusItem.matchInfo.competition} · {focusItem.matchInfo.matchDate}
-              </p>
-              <p className="mt-3 text-sm text-muted-foreground">
-                {focusItem.result?.analysis ?? '暂无分析内容。'}
-              </p>
-            </div>
           )}
           <div className="space-y-3">
             {items.map((item) => (
@@ -60,9 +42,9 @@ export default function HistoryPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-muted-foreground">
-                    {item.status}
+                    {item.status === 'completed' ? '已完成' : item.status === 'processing' ? '处理中' : item.status}
                   </span>
-                  <Link href={`/dashboard/history?focus=${item.id}`}>
+                  <Link href={`/dashboard/analysis/${item.id}`}>
                     <Button variant="outline" size="sm">
                       查看详情
                     </Button>

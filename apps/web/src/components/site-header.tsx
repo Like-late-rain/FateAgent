@@ -1,5 +1,9 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/stores/auth';
+import { useAuth } from '@/hooks/use-auth';
 
 const navLinks = [
   { href: '/', label: '首页' },
@@ -9,6 +13,13 @@ const navLinks = [
 ];
 
 export function SiteHeader() {
+  const user = useAuthStore((state) => state.user);
+  const { logoutMutation } = useAuth();
+
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
+
   return (
     <header className="border-b border-border/60 bg-background/80 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
@@ -30,14 +41,27 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-3">
-          <Link href="/login">
-            <Button variant="ghost" size="sm">
-              登录
-            </Button>
-          </Link>
-          <Link href="/register">
-            <Button size="sm">免费注册</Button>
-          </Link>
+          {user ? (
+            <>
+              <span className="text-sm text-muted-foreground">
+                {user.nickname || user.phone}
+              </span>
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                退出登录
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link href="/login">
+                <Button variant="ghost" size="sm">
+                  登录
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button size="sm">免费注册</Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

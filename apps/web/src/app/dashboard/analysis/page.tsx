@@ -1,45 +1,50 @@
 'use client';
 
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAnalysisForm } from '@/hooks/use-analysis-form';
+import { useAnalysisFlow } from '@/hooks/use-analysis-flow';
+import { useParseQuery } from '@/hooks/use-parse-query';
 import { useCredits } from '@/hooks/use-credits';
 import { AnalysisForm } from '@/components/analysis/analysis-form';
 import { AnalysisResultCard } from '@/components/analysis/analysis-result';
 import { AnalysisDisclaimer } from '@/components/analysis/analysis-disclaimer';
 
 export default function AnalysisPage() {
-  const { form, onSubmit, analysisFlow } = useAnalysisForm();
-  const { state, reset } = analysisFlow;
   const creditsQuery = useCredits();
   const credits = creditsQuery.data?.data?.remainingCredits ?? 0;
-  const canSubmit =
-    credits > 0 &&
-    state.status !== 'submitting' &&
-    !creditsQuery.isLoading &&
-    !creditsQuery.isError;
+
+  const parseQuery = useParseQuery();
+  const analysisFlow = useAnalysisFlow();
+
+  const handleReset = () => {
+    parseQuery.reset();
+    analysisFlow.reset();
+  };
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>赛事分析</CardTitle>
-          <CardDescription>输入比赛信息，系统将生成结构化分析报告。</CardDescription>
+          <CardDescription>
+            用自然语言描述您想分析的比赛，AI 将自动解析并生成预测报告。
+          </CardDescription>
         </CardHeader>
       </Card>
       <AnalysisForm
-        form={form}
-        onSubmit={onSubmit}
-        onReset={reset}
-        state={state}
         credits={credits}
-        canSubmit={canSubmit}
         isLoading={creditsQuery.isLoading}
         isError={creditsQuery.isError}
+        parseState={parseQuery.state}
+        analysisState={analysisFlow.state}
+        onParse={parseQuery.parse}
+        onConfirm={analysisFlow.submit}
+        onReset={handleReset}
+        onEditParsed={parseQuery.editParsed}
       />
       <AnalysisResultCard
-        status={state.status}
-        result={state.status === 'completed' ? state.result : undefined}
-        errorMessage={state.status === 'error' ? state.message : undefined}
+        status={analysisFlow.state.status}
+        result={analysisFlow.state.status === 'completed' ? analysisFlow.state.result : undefined}
+        errorMessage={analysisFlow.state.status === 'error' ? analysisFlow.state.message : undefined}
       />
       <AnalysisDisclaimer />
     </div>

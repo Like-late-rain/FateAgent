@@ -18,7 +18,8 @@ function cookieOptions() {
   return {
     httpOnly: true,
     sameSite: 'lax' as const,
-    secure: isProd
+    secure: isProd,
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 天，与 JWT 过期时间一致
   };
 }
 
