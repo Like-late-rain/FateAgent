@@ -3,6 +3,7 @@ import { authController } from '../controllers/authController';
 import { userController } from '../controllers/userController';
 import { orderController } from '../controllers/orderController';
 import { analysisController } from '../controllers/analysisController';
+import * as matchResultController from '../controllers/matchResultController.js';
 import { authMiddleware } from '../middlewares/authMiddleware';
 import { paymentCallbackAuth } from '../middlewares/paymentCallbackAuth';
 
@@ -22,3 +23,8 @@ apiRouter.post('/analysis/parse', authMiddleware, analysisController.parse);
 apiRouter.post('/analysis', authMiddleware, analysisController.create);
 apiRouter.get('/analysis/:id', authMiddleware, analysisController.getById);
 apiRouter.get('/analysis', authMiddleware, analysisController.list);
+
+// 比赛结果和 Agent 性能
+apiRouter.post('/match-results', authMiddleware, matchResultController.recordResult);
+apiRouter.get('/match-results/comparison/:id', authMiddleware, matchResultController.getComparison);
+apiRouter.get('/agent/performance', matchResultController.getPerformanceMetrics);
