@@ -86,26 +86,20 @@ export async function recordMatchResult(
 }
 
 /**
- * 计算预测对比结果
+ * 计算预测的最可能结果
  */
-function calculatePredictionComparison(
-  matchInfo: AnalysisRecord['matchInfo'],
-  result: AnalysisRecord['result'],
-  actualResult: MatchActualResult
-): PredictionComparison {
-  if (!result) {
-    throw new Error('分析结果不存在');
-  }
-
-  // 1. 确定 Agent 预测的最可能结果
+function calculatePredictedOutcome(winProbability: any): {
+  predictedOutcome: 'homeWin' | 'draw' | 'awayWin';
+  maxProbability: number;
+} {
   let predictedOutcome: 'homeWin' | 'draw' | 'awayWin' = 'draw';
   let maxProbability = 0;
 
-  if (result.winProbability) {
+  if (winProbability) {
     const probs = {
-      homeWin: result.winProbability.homeWin,
-      draw: result.winProbability.draw,
-      awayWin: result.winProbability.awayWin
+      homeWin: winProbability.homeWin,
+      draw: winProbability.draw,
+      awayWin: winProbability.awayWin
     };
 
     if (probs.homeWin > maxProbability) {
@@ -122,19 +116,23 @@ function calculatePredictionComparison(
     }
   }
 
-  // 2. 胜负预测准确性
-  const outcomeCorrect = predictedOutcome === actualResult.outcome;
-  const outcomeProbability = result.winProbability ?
-    result.winProbability[actualResult.outcome] : 0;
+  return { predictedOutcome, maxProbability };
+}
 
-  // 3. 比分预测准确性
-  const actualScore = `${actualResult.homeScore}-${actualResult.awayScore}`;
+/**
+ * 计算比分预测准确性
+ */
+function calculateScoreAccuracy(scorePredictions: any[], actualScore: string): {
+  exactScoreCorrect: boolean;
+  scoreInTop5: boolean;
+  scoreRank?: number;
+} {
   let exactScoreCorrect = false;
   let scoreInTop5 = false;
   let scoreRank: number | undefined;
 
-  if (result.scorePredictions && result.scorePredictions.length > 0) {
-    const top5Scores = result.scorePredictions.slice(0, 5);
+  if (scorePredictions && scorePredictions.length > 0) {
+    const top5Scores = scorePredictions.slice(0, 5);
 
     top5Scores.forEach((pred, index) => {
       if (pred.score === actualScore) {
@@ -147,15 +145,24 @@ function calculatePredictionComparison(
     });
   }
 
-  // 4. 进球数预测准确性
+  return { exactScoreCorrect, scoreInTop5, scoreRank };
+}
+
+/**
+ * 计算进球数预测准确性
+ */
+function calculateGoalsAccuracy(goalsPrediction: any, actualResult: MatchActualResult): {
+  overUnderCorrect?: boolean;
+  bothTeamsScoreCorrect?: boolean;
+} {
   let overUnderCorrect: boolean | undefined;
   let bothTeamsScoreCorrect: boolean | undefined;
 
-  if (result.goalsPrediction) {
+  if (goalsPrediction) {
     // 大小球 2.5
     const totalGoals = actualResult.totalGoals;
-    const over25Prob = result.goalsPrediction.totalOver2_5 ?? 0;
-    const under25Prob = result.goalsPrediction.totalUnder2_5 ?? 0;
+    const over25Prob = goalsPrediction.totalOver2_5 ?? 0;
+    const under25Prob = goalsPrediction.totalUnder2_5 ?? 0;
 
     if (over25Prob > 0 || under25Prob > 0) {
       const predictOver = over25Prob > under25Prob;
@@ -164,28 +171,41 @@ function calculatePredictionComparison(
     }
 
     // 双方进球
-    if (typeof result.goalsPrediction.bothTeamsScore === 'number') {
+    if (typeof goalsPrediction.bothTeamsScore === 'number') {
       const bothScored = actualResult.homeScore > 0 && actualResult.awayScore > 0;
-      bothTeamsScoreCorrect = result.goalsPrediction.bothTeamsScore > 0.5 ? bothScored : !bothScored;
+      bothTeamsScoreCorrect = goalsPrediction.bothTeamsScore > 0.5 ? bothScored : !bothScored;
     }
   }
 
-  // 5. 计算综合评分 (0-100)
+  return { overUnderCorrect, bothTeamsScoreCorrect };
+}
+
+/**
+ * 计算综合评分
+ */
+function calculateAccuracyScore(
+  outcomeCorrect: boolean,
+  maxProbability: number,
+  exactScoreCorrect: boolean,
+  scoreInTop5: boolean,
+  scoreRank: number | undefined,
+  overUnderCorrect: boolean | undefined,
+  bothTeamsScoreCorrect: boolean | undefined
+): number {
   let accuracyScore = 0;
 
   // 胜负预测: 40 分
   if (outcomeCorrect) {
     accuracyScore += 40;
   } else {
-    // 如果预测错误但给出的概率较低，也给部分分数
     accuracyScore += Math.max(0, (1 - maxProbability) * 20);
   }
 
   // 比分预测: 30 分
   if (exactScoreCorrect) {
     accuracyScore += 30;
-  } else if (scoreInTop5) {
-    accuracyScore += 20 - ((scoreRank! - 1) * 3); // 排名越靠前分数越高
+  } else if (scoreInTop5 && scoreRank) {
+    accuracyScore += 20 - ((scoreRank - 1) * 3);
   }
 
   // 进球数预测: 30 分
@@ -195,6 +215,53 @@ function calculatePredictionComparison(
   if (bothTeamsScoreCorrect !== undefined) {
     accuracyScore += bothTeamsScoreCorrect ? 15 : 0;
   }
+
+  return Math.round(accuracyScore);
+}
+
+/**
+ * 计算预测对比结果（主函数）
+ */
+function calculatePredictionComparison(
+  matchInfo: AnalysisRecord['matchInfo'],
+  result: AnalysisRecord['result'],
+  actualResult: MatchActualResult
+): PredictionComparison {
+  if (!result) {
+    throw new Error('分析结果不存在');
+  }
+
+  // 1. 确定预测结果
+  const { predictedOutcome, maxProbability } = calculatePredictedOutcome(result.winProbability);
+
+  // 2. 胜负预测准确性
+  const outcomeCorrect = predictedOutcome === actualResult.outcome;
+  const outcomeProbability = result.winProbability ?
+    result.winProbability[actualResult.outcome] : 0;
+
+  // 3. 比分预测准确性
+  const actualScore = `${actualResult.homeScore}-${actualResult.awayScore}`;
+  const { exactScoreCorrect, scoreInTop5, scoreRank } = calculateScoreAccuracy(
+    result.scorePredictions || [],
+    actualScore
+  );
+
+  // 4. 进球数预测准确性
+  const { overUnderCorrect, bothTeamsScoreCorrect } = calculateGoalsAccuracy(
+    result.goalsPrediction,
+    actualResult
+  );
+
+  // 5. 计算综合评分
+  const accuracyScore = calculateAccuracyScore(
+    outcomeCorrect,
+    maxProbability,
+    exactScoreCorrect,
+    scoreInTop5,
+    scoreRank,
+    overUnderCorrect,
+    bothTeamsScoreCorrect
+  );
 
   return {
     outcomeCorrect,
@@ -206,13 +273,16 @@ function calculatePredictionComparison(
     scoreRank,
     overUnderCorrect,
     bothTeamsScoreCorrect,
-    accuracyScore: Math.round(accuracyScore),
+    accuracyScore,
     calculatedAt: new Date().toISOString()
   };
 }
 
 /**
  * 更新 Agent 全局性能指标
+ *
+ * 注意：当前实现使用乐观锁机制，Supabase 的 RLS 和行级锁确保并发安全。
+ * 在高并发场景下，可以考虑使用数据库函数来实现原子性更新。
  */
 async function updateAgentPerformanceMetrics(comparison: PredictionComparison): Promise<void> {
   try {

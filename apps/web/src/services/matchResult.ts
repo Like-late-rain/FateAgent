@@ -38,37 +38,48 @@ export async function recordMatchResult(
  * 获取预测对比结果
  */
 export async function getComparisonResult(analysisId: string) {
-  const res = await fetch(`${API_URL}/match-results/comparison/${analysisId}`, {
-    credentials: 'include'
-  });
+  try {
+    const res = await fetch(`${API_URL}/match-results/comparison/${analysisId}`, {
+      credentials: 'include'
+    });
 
-  if (!res.ok) {
-    const data = await res.json();
-    throw {
-      response: {
-        data: {
-          error: data.error,
-          canCompare: data.canCompare,
-          matchDate: data.matchDate
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw {
+        response: {
+          data: {
+            error: data.error || '获取失败',
+            canCompare: data.canCompare,
+            matchDate: data.matchDate
+          }
         }
-      }
-    };
-  }
+      };
+    }
 
-  return res.json();
+    return res.json();
+  } catch (error) {
+    console.error('[GetComparisonResult] Error:', error);
+    throw error;
+  }
 }
 
 /**
  * 获取 Agent 性能指标
  */
 export async function getAgentPerformance() {
-  const res = await fetch(`${API_URL}/agent/performance`, {
-    credentials: 'include'
-  });
+  try {
+    const res = await fetch(`${API_URL}/agent/performance`, {
+      credentials: 'include'
+    });
 
-  if (!res.ok) {
-    throw new Error('获取失败');
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || '获取失败');
+    }
+
+    return res.json();
+  } catch (error) {
+    console.error('[GetAgentPerformance] Error:', error);
+    throw error;
   }
-
-  return res.json();
 }

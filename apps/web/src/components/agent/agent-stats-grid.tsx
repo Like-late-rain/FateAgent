@@ -1,3 +1,5 @@
+'use client';
+
 interface AgentStatsGridProps {
   metrics: {
     outcomeAccuracy: number;
