@@ -46,11 +46,17 @@ export async function analyzeMatch(payload: AnalysisPayload): Promise<AnalysisRe
 
   // 验证并修正概率
   if (result.winProbability) {
-    const total = result.winProbability.homeWin + result.winProbability.draw + result.winProbability.awayWin;
-    if (Math.abs(total - 1.0) > 0.01) {
+    const { homeWin, draw, awayWin } = result.winProbability;
+    const total = homeWin + draw + awayWin;
+
+    // 检查 total 是否有效（非零、非 NaN、有限）
+    if (!Number.isFinite(total) || total <= 0) {
+      console.warn(`[Analysis] Invalid win probability total: ${total}, using fallback`);
+      result.winProbability = { homeWin: 0.4, draw: 0.3, awayWin: 0.3 };
+    } else if (Math.abs(total - 1.0) > 0.01) {
       console.warn(`[Analysis] Win probability sum is ${total}, normalizing...`);
-      result.winProbability.homeWin = Number((result.winProbability.homeWin / total).toFixed(2));
-      result.winProbability.draw = Number((result.winProbability.draw / total).toFixed(2));
+      result.winProbability.homeWin = Number((homeWin / total).toFixed(2));
+      result.winProbability.draw = Number((draw / total).toFixed(2));
       result.winProbability.awayWin = Number((1 - result.winProbability.homeWin - result.winProbability.draw).toFixed(2));
     }
   }
