@@ -7,6 +7,14 @@ import { Loading } from '@/components/ui/loading';
 import { ErrorMessage } from '@/components/ui/error-message';
 import { useAnalysisHistory } from '@/hooks/use-analysis-history';
 
+// 判断比赛是否已结束（比赛日期 < 今天）
+function isMatchCompleted(matchDate: string): boolean {
+  const match = new Date(matchDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return match < today;
+}
+
 export default function HistoryPage() {
   const { query, page, setPage, hasMore } = useAnalysisHistory();
   const items = query.data?.data?.items ?? [];
@@ -49,6 +57,13 @@ export default function HistoryPage() {
                       查看详情
                     </Button>
                   </Link>
+                  {item.status === 'completed' && isMatchCompleted(item.matchInfo.matchDate) && (
+                    <Link href={`/dashboard/comparison/${item.id}`}>
+                      <Button variant="secondary" size="sm">
+                        结果对比
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}

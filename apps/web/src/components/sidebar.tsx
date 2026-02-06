@@ -5,6 +5,7 @@ const links = [
   { href: '/dashboard', label: '概览' },
   { href: '/dashboard/analysis', label: '赛事分析' },
   { href: '/dashboard/history', label: '历史记录' },
+  { href: '/dashboard/agent-performance', label: 'Agent 性能' },
   { href: '/dashboard/purchase', label: '购买次数' }
 ];
 
