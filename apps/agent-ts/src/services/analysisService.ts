@@ -97,47 +97,55 @@ ${dataContext}
   return message;
 }
 
+function validateWinProbability(result: AnalysisResult): void {
+  if (!result.winProbability) return;
+
+  const { homeWin, draw, awayWin } = result.winProbability;
+  const total = homeWin + draw + awayWin;
+
+  if (!Number.isFinite(total) || total <= 0) {
+    console.warn(`[Analysis] Invalid win probability total: ${total}, using fallback`);
+    result.winProbability = { homeWin: 0.40, draw: 0.30, awayWin: 0.30 };
+  } else if (Math.abs(total - 1.0) > 0.01) {
+    console.warn(`[Analysis] Win probability sum is ${total}, normalizing...`);
+    result.winProbability.homeWin = Number((homeWin / total).toFixed(2));
+    result.winProbability.draw = Number((draw / total).toFixed(2));
+    result.winProbability.awayWin = Number((1 - result.winProbability.homeWin - result.winProbability.draw).toFixed(2));
+  }
+}
+
+function ensurePredictionConsistency(result: AnalysisResult): void {
+  if (!result.winProbability) return;
+
+  const wp = result.winProbability;
+  if (wp.homeWin >= wp.draw && wp.homeWin >= wp.awayWin) {
+    result.prediction = '主胜';
+  } else if (wp.awayWin >= wp.homeWin && wp.awayWin >= wp.draw) {
+    result.prediction = '客胜';
+  } else {
+    result.prediction = '平局';
+  }
+}
+
+function validateGoalsPrediction(result: AnalysisResult): void {
+  if (!result.goalsPrediction) return;
+
+  const gp = result.goalsPrediction;
+  const ouTotal = (gp.totalOver2_5 || 0) + (gp.totalUnder2_5 || 0);
+  if (ouTotal > 0 && Math.abs(ouTotal - 1.0) > 0.01) {
+    gp.totalOver2_5 = Number((gp.totalOver2_5 / ouTotal).toFixed(2));
+    gp.totalUnder2_5 = Number((1 - gp.totalOver2_5).toFixed(2));
+  }
+}
+
 /**
  * 验证和修正 AI 返回的概率值
  */
 function validateAndFixProbabilities(result: AnalysisResult, dataAvailable: boolean): void {
-  // 修正胜平负概率
-  if (result.winProbability) {
-    const { homeWin, draw, awayWin } = result.winProbability;
-    const total = homeWin + draw + awayWin;
+  validateWinProbability(result);
+  ensurePredictionConsistency(result);
+  validateGoalsPrediction(result);
 
-    if (!Number.isFinite(total) || total <= 0) {
-      console.warn(`[Analysis] Invalid win probability total: ${total}, using fallback`);
-      result.winProbability = { homeWin: 0.40, draw: 0.30, awayWin: 0.30 };
-    } else if (Math.abs(total - 1.0) > 0.01) {
-      console.warn(`[Analysis] Win probability sum is ${total}, normalizing...`);
-      result.winProbability.homeWin = Number((homeWin / total).toFixed(2));
-      result.winProbability.draw = Number((draw / total).toFixed(2));
-      result.winProbability.awayWin = Number((1 - result.winProbability.homeWin - result.winProbability.draw).toFixed(2));
-    }
-
-    // 确保 prediction 与 winProbability 一致
-    const wp = result.winProbability;
-    if (wp.homeWin >= wp.draw && wp.homeWin >= wp.awayWin) {
-      result.prediction = '主胜';
-    } else if (wp.awayWin >= wp.homeWin && wp.awayWin >= wp.draw) {
-      result.prediction = '客胜';
-    } else {
-      result.prediction = '平局';
-    }
-  }
-
-  // 修正进球预测概率
-  if (result.goalsPrediction) {
-    const gp = result.goalsPrediction;
-    const ouTotal = (gp.totalOver2_5 || 0) + (gp.totalUnder2_5 || 0);
-    if (ouTotal > 0 && Math.abs(ouTotal - 1.0) > 0.01) {
-      gp.totalOver2_5 = Number((gp.totalOver2_5 / ouTotal).toFixed(2));
-      gp.totalUnder2_5 = Number((1 - gp.totalOver2_5).toFixed(2));
-    }
-  }
-
-  // 如果没有数据支撑，限制 confidence
   if (!dataAvailable && result.confidence > 0.5) {
     console.warn(`[Analysis] No data but confidence=${result.confidence}, capping at 0.5`);
     result.confidence = 0.5;

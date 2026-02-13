@@ -46,6 +46,27 @@ interface TeamSearchResponse {
   }>;
 }
 
+async function fetchWithRetry(url: string, apiKey: string, maxRetries = 2): Promise<Response> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    if (attempt > 0) {
+      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
+    }
+    try {
+      const response = await fetch(url, { headers: { 'x-apisports-key': apiKey } });
+      if (response.status === 429) {
+        console.warn(`[MatchResult] Rate limited, attempt ${attempt + 1}/${maxRetries + 1}`);
+        lastError = new Error('Rate limited');
+        continue;
+      }
+      return response;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError;
+}
+
 async function searchTeam(teamName: string): Promise<number | null> {
   const apiKey = getApiKey();
   if (!apiKey) {
@@ -58,9 +79,7 @@ async function searchTeam(teamName: string): Promise<number | null> {
   url.searchParams.set('search', searchName);
 
   try {
-    const response = await fetch(url.toString(), {
-      headers: { 'x-apisports-key': apiKey }
-    });
+    const response = await fetchWithRetry(url.toString(), apiKey);
 
     if (!response.ok) {
       return null;
@@ -124,9 +143,7 @@ export async function fetchMatchResult(
     url.searchParams.set('h2h', `${homeTeamId}-${awayTeamId}`);
     url.searchParams.set('season', String(season));
 
-    const response = await fetch(url.toString(), {
-      headers: { 'x-apisports-key': apiKey }
-    });
+    const response = await fetchWithRetry(url.toString(), apiKey);
 
     if (!response.ok) {
       return { success: false, error: 'API 请求失败' };
