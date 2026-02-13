@@ -97,10 +97,17 @@ interface FixturesResponse {
   }>;
 }
 
+function getCurrentSeasons(count: number): number[] {
+  const year = new Date().getFullYear();
+  // API-Football 跨年赛季用起始年份，当前赛季为上一年度
+  const currentSeason = year >= 2025 ? year - 1 : year;
+  return Array.from({ length: count }, (_, i) => currentSeason - i);
+}
+
 async function getTeamFixtures(teamId: number, limit = 20): Promise<MatchRecord[]> {
   // Free plan 不支持 last 参数，使用 season 参数代替
-  // 先尝试当前赛季(2024)，如果没数据则尝试上赛季
-  const seasons = [2024, 2023];
+  // 先尝试当前赛季，如果没数据则尝试上赛季
+  const seasons = getCurrentSeasons(2);
 
   for (const season of seasons) {
     const data = await makeRequest<FixturesResponse>('/fixtures', { team: teamId, season });
@@ -149,7 +156,7 @@ interface HeadToHeadResponse {
 
 async function getHeadToHead(teamId1: number, teamId2: number): Promise<MatchRecord[]> {
   // Free plan 不支持 last 参数，改用 season 参数，尝试多个赛季以获取足够的交锋记录
-  const seasons = [2024, 2023, 2022];
+  const seasons = getCurrentSeasons(3);
   const allMatches: MatchRecord[] = [];
 
   for (const season of seasons) {
@@ -394,14 +401,19 @@ export async function getTeamData(teamName: string): Promise<TeamData> {
 }
 
 export async function getHeadToHeadData(homeTeam: string, awayTeam: string): Promise<MatchRecord[]> {
-  const homeId = await searchTeam(homeTeam);
-  const awayId = await searchTeam(awayTeam);
+  try {
+    const homeId = await searchTeam(homeTeam);
+    const awayId = await searchTeam(awayTeam);
 
-  if (!homeId || !awayId) {
+    if (!homeId || !awayId) {
+      return [];
+    }
+
+    return getHeadToHead(homeId, awayId);
+  } catch (error) {
+    console.error('[FootballData] getHeadToHeadData error:', error);
     return [];
   }
-
-  return getHeadToHead(homeId, awayId);
 }
 
 export function formatDataForPrompt(
