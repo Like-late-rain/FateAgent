@@ -24,7 +24,9 @@ export async function chatCompletion(
   userMessage: string
 ): Promise<string> {
   const openai = getOpenAIClient();
-  const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+  // gpt-4o 具备更强的推理和统计分析能力，适合复杂的概率计算
+  // gpt-4o-mini 推理太弱，导致概率预测偏差大
+  const model = process.env.OPENAI_MODEL || 'gpt-4o';
 
   const response = await openai.chat.completions.create({
     model,
@@ -32,8 +34,8 @@ export async function chatCompletion(
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userMessage }
     ],
-    temperature: 0.3,
-    max_tokens: 2000
+    temperature: 0.6,
+    max_tokens: 4000
   });
 
   const content = response.choices[0]?.message?.content;

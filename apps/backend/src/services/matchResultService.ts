@@ -516,6 +516,71 @@ export async function getAnalysisComparison(analysisId: string) {
 }
 
 /**
+ * 自动抓取并录入比赛结果
+ */
+export async function autoFetchAndRecordResult(analysisId: string): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const supabase = getSupabaseClient();
+
+    // 获取分析记录
+    const { data: analysisRow, error: fetchError } = await supabase
+      .from('analysis_records')
+      .select('*')
+      .eq('id', analysisId)
+      .single();
+
+    if (fetchError || !analysisRow) {
+      return { success: false, error: '分析记录不存在' };
+    }
+
+    // 检查是否已经有结果
+    if (analysisRow.actual_result) {
+      return { success: false, error: '比赛结果已存在' };
+    }
+
+    const matchInfo = analysisRow.match_info as AnalysisRecord['matchInfo'];
+    const matchDate = new Date(matchInfo.matchDate);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    // 检查比赛是否已经结束
+    if (matchDate >= now) {
+      return { success: false, error: '比赛尚未结束' };
+    }
+
+    // 调用 Agent 服务抓取比赛结果
+    const { agentService } = await import('./agentService.js');
+    const fetchResult = await agentService.fetchMatchResult(
+      matchInfo.homeTeam,
+      matchInfo.awayTeam,
+      matchInfo.matchDate
+    );
+
+    if (!fetchResult.success || fetchResult.homeScore === undefined || fetchResult.awayScore === undefined) {
+      return {
+        success: false,
+        error: fetchResult.error || '无法获取比赛结果'
+      };
+    }
+
+    // 录入结果
+    const recordResult = await recordMatchResult(
+      analysisId,
+      fetchResult.homeScore,
+      fetchResult.awayScore
+    );
+
+    return recordResult;
+  } catch (error) {
+    console.error('[MatchResult] Auto fetch error:', error);
+    return { success: false, error: '自动抓取失败' };
+  }
+}
+
+/**
  * 获取 Agent 性能指标
  */
 export async function getAgentPerformanceMetrics() {

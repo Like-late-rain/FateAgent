@@ -3,7 +3,8 @@ import { z } from 'zod';
 import {
   recordMatchResult,
   getAnalysisComparison,
-  getAgentPerformanceMetrics
+  getAgentPerformanceMetrics,
+  autoFetchAndRecordResult
 } from '../services/matchResultService.js';
 
 // 录入比赛结果
@@ -64,7 +65,7 @@ export async function getComparison(req: Request, res: Response) {
 }
 
 // 获取 Agent 性能指标
-export async function getPerformanceMetrics(req: Request, res: Response) {
+export async function getPerformanceMetrics(_req: Request, res: Response) {
   try {
     const result = await getAgentPerformanceMetrics();
 
@@ -77,5 +78,30 @@ export async function getPerformanceMetrics(req: Request, res: Response) {
   } catch (error) {
     console.error('[GetPerformanceMetrics] Error:', error);
     res.status(500).json({ error: '获取失败' });
+  }
+}
+
+// 自动抓取并录入比赛结果
+export async function autoFetchResult(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      res.status(400).json({ error: '缺少分析ID' });
+      return;
+    }
+
+    console.log(`[AutoFetch] Starting auto fetch for analysis ${id}`);
+    const result = await autoFetchAndRecordResult(id);
+
+    if (!result.success) {
+      res.status(400).json({ error: result.error });
+      return;
+    }
+
+    res.json({ success: true, message: '比赛结果已自动录入' });
+  } catch (error) {
+    console.error('[AutoFetch] Error:', error);
+    res.status(500).json({ error: '自动抓取失败' });
   }
 }

@@ -26,5 +26,6 @@ apiRouter.get('/analysis', authMiddleware, analysisController.list);
 
 // 比赛结果和 Agent 性能
 apiRouter.post('/match-results', authMiddleware, matchResultController.recordResult);
+apiRouter.post('/match-results/auto-fetch/:id', authMiddleware, matchResultController.autoFetchResult);
 apiRouter.get('/match-results/comparison/:id', authMiddleware, matchResultController.getComparison);
 apiRouter.get('/agent/performance', matchResultController.getPerformanceMetrics);

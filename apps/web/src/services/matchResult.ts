@@ -35,6 +35,28 @@ export async function recordMatchResult(
 }
 
 /**
+ * 自动抓取并录入比赛结果
+ */
+export async function autoFetchMatchResult(analysisId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch(`${API_URL}/match-results/auto-fetch/${analysisId}`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      return { success: false, error: data.error || '自动抓取失败' };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('[AutoFetchMatchResult] Error:', error);
+    return { success: false, error: '网络错误' };
+  }
+}
+
+/**
  * 获取预测对比结果
  */
 export async function getComparisonResult(analysisId: string) {
