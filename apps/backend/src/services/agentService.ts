@@ -105,5 +105,46 @@ export const agentService = {
     } finally {
       clearTimeout(timeout);
     }
+  },
+  async fetchMatchResult(
+    homeTeam: string,
+    awayTeam: string,
+    matchDate: string
+  ): Promise<{ success: boolean; homeScore?: number; awayScore?: number; error?: string }> {
+    const baseUrl = process.env.AGENT_SERVICE_URL;
+    const apiKey = process.env.AGENT_API_KEY ?? '';
+
+    if (!baseUrl) {
+      return { success: false, error: 'Agent 服务未配置' };
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+
+    try {
+      const res = await fetch(`${baseUrl}/api/v1/match-result`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': apiKey
+        },
+        body: JSON.stringify({ homeTeam, awayTeam, matchDate }),
+        signal: controller.signal
+      });
+      const data = (await res.json()) as {
+        success: boolean;
+        homeScore?: number;
+        awayScore?: number;
+        error?: string;
+      };
+      if (!res.ok) {
+        return { success: false, error: '查询服务请求失败' };
+      }
+      return data;
+    } catch (_error) {
+      return { success: false, error: '查询服务连接失败' };
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 };

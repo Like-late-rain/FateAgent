@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { parseMatchQuery } from '../services/parseService.js';
 import { analyzeMatch, getDisclaimer } from '../services/analysisService.js';
+import { fetchMatchResult } from '../services/matchResultService.js';
 
 const router = express.Router();
 
@@ -15,6 +16,12 @@ const analyzeSchema = z.object({
   awayTeam: z.string().min(1),
   competition: z.string().min(1),
   matchDate: z.string().min(8)
+});
+
+const matchResultSchema = z.object({
+  homeTeam: z.string().min(1),
+  awayTeam: z.string().min(1),
+  matchDate: z.string().min(8) // YYYY-MM-DD
 });
 
 // API Key 验证中间件
@@ -80,6 +87,24 @@ router.post('/analyze', requireApiKey, async (req: Request, res: Response) => {
       },
       disclaimer: getDisclaimer()
     });
+  }
+});
+
+// 查询比赛结果接口
+router.post('/match-result', requireApiKey, async (req: Request, res: Response) => {
+  try {
+    const { homeTeam, awayTeam, matchDate } = matchResultSchema.parse(req.body);
+    console.log(`[Route /match-result] Fetching result for ${homeTeam} vs ${awayTeam} on ${matchDate}`);
+
+    const result = await fetchMatchResult(homeTeam, awayTeam, matchDate);
+    res.json(result);
+  } catch (error) {
+    console.error('[Route /match-result] Error:', error);
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ success: false, error: '请求参数无效' });
+      return;
+    }
+    res.status(500).json({ success: false, error: '查询服务内部错误' });
   }
 });
 

@@ -1,18 +1,21 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loading } from '@/components/ui/loading';
 import { ErrorMessage } from '@/components/ui/error-message';
 import { Badge } from '@/components/ui/badge';
-import { getComparisonResult } from '@/services/matchResult';
+import { getComparisonResult, autoFetchMatchResult } from '@/services/matchResult';
+import { useState } from 'react';
 
 export default function ComparisonPage() {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const id = params.id as string;
+  const [isAutoFetching, setIsAutoFetching] = useState(false);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['comparison', id],
@@ -20,6 +23,26 @@ export default function ComparisonPage() {
     enabled: !!id,
     retry: false
   });
+
+  // 自动抓取 mutation
+  const autoFetchMutation = useMutation({
+    mutationFn: () => autoFetchMatchResult(id),
+    onSuccess: (result) => {
+      if (result.success) {
+        // 重新加载对比数据
+        queryClient.invalidateQueries({ queryKey: ['comparison', id] });
+      }
+    }
+  });
+
+  const handleAutoFetch = async () => {
+    setIsAutoFetching(true);
+    try {
+      await autoFetchMutation.mutateAsync();
+    } finally {
+      setIsAutoFetching(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -40,15 +63,31 @@ export default function ComparisonPage() {
           <Card>
             <CardContent className="pt-6">
               <p className="text-sm text-muted-foreground mb-4">
-                比赛结果尚未录入。如果您知道比赛结果，可以帮助录入以改进 Agent 的学习。
+                比赛结果尚未录入。Agent 可以自动从网络抓取比赛结果，或者您也可以手动录入。
               </p>
-              <Button onClick={() => router.push(`/dashboard/record-result/${id}`)}>
-                录入比赛结果
-              </Button>
+              {autoFetchMutation.isError && (
+                <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
+                  自动抓取失败：{(autoFetchMutation.error as any)?.error || '未知错误'}
+                </div>
+              )}
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleAutoFetch}
+                  disabled={isAutoFetching || autoFetchMutation.isPending}
+                >
+                  {isAutoFetching || autoFetchMutation.isPending ? '抓取中...' : '🤖 自动抓取结果'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => router.push(`/dashboard/record-result/${id}`)}
+                >
+                  手动录入结果
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
-        <Button onClick={() => router.back()}>返回</Button>
+        <Button variant="outline" onClick={() => router.back()}>返回</Button>
       </div>
     );
   }
